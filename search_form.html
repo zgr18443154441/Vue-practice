@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="vue.js"></script>
+    <script src="vue-resource.js"></script>
+    <style>
+        .gray{
+            background: #c0c0c0;
+        }
+    </style>
+    <script>
+
+        window.onload=function () {
+            new Vue({
+                el:'#box',
+                data:{
+                    search_word:'',
+                    search_result:[],
+                    which:-1
+                },
+                methods:{
+                    search:function (ev) {
+                        if(ev.keyCode==38||ev.keyCode==40)return;
+                        if(ev.keyCode==13){
+                            window.open('https://sp0.baidu.com/s?wd='+this.search_word);
+                            this.search_word='';
+                        }
+                        this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su',{
+                            params:{wd:this.search_word},
+                            jsonp:'cb'
+                        }).then(function (res) {
+                            this.search_result=res.data.s;
+                        },function (res) {
+                            alert(res.status)
+                        })
+                    },
+                    changedown:function () {
+                      if(this.which<this.search_result.length){
+                          this.which++;
+                          this.search_word=this.search_result[this.which];
+                      }else{
+                          this.which=-1;
+                      }
+                    },
+                    changeup:function () {
+                      if(this.which<0){
+                          this.which=this.search_result.length-1;
+                      }else{
+                          this.which--;
+                          this.search_word=this.search_result[this.which];
+                      }
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="box">
+        <input type="text" v-model="search_word" @keyup="search($event)" @keydown.down="changedown()" @keydown.up.prevent="changeup()">
+        <ul>
+            <li v-for="(value,index) in search_result" :class="{gray:index==which}">{{value}}</li>
+        </ul>
+        <span v-show="search_result.length==0">没有数据...</span>
+    </div>
+</body>
+</html>
